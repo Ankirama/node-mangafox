@@ -5,12 +5,34 @@ var mangaFox = {};
 var mangaFoxBaseURI = "http://mangafox.la";
 
 //Gets info about a manga
-mangaFox.getDetails = function(id, callback) {
-    $.post(mangaFoxBaseURI + '/ajax/series.php', { sid: id }, function(data) {
+mangaFox.getDetails = function(id) {
+    return new Promise(function(resolve, reject) {
+        $.post(mangaFoxBaseURI + '/ajax/series.php', { sid: id }, function(data) {
+            try {
+                data = JSON.parse(data);
+                let manga = data;
+                if (data.length === 11) {
+                    let manga = {
+                        id: id,
+                        title: data[0],
+                        alternatives: data[1].split('; '),
+                        genres: data[2].split(', '),
+                        authors: data[3].split(', '),
+                        artists: data[4].split(', '),
+                        rank: data[5].substring(0, data[5].length - 2),
 
-        try { data = JSON.parse(data); } catch (e) {};
-
-        (callback || function() {})(data);
+                        average_rating: data[7],
+                        released_year: data[8],
+                        description: data[9],
+                        img: data[10]
+                    }
+                }
+                // manage data here
+                return resolve(manga);
+            } catch (e) {
+                return reject(e);
+            };
+        });
     });
 }
 
